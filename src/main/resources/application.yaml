@@ -1,6 +1,9 @@
 spring:
   application:
     name: nestegg-backend
+  web:
+    locale: en
+    locale-resolver: fixed
   jpa:
     open-in-view: false
     hibernate:
