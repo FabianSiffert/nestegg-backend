@@ -55,6 +55,26 @@ fun update(id: UUID, request: AssetRequest): AssetResponse {
 
 No changes, no `UPDATE`.
 
+### Replacing an entity with `save()` (merge)
+
+The services in this project do not assign fields one by one. An update builds a fresh entity from the request, with the ID of the existing one, and passes it to `save()`:
+
+```kotlin
+@Transactional
+fun update(id: UUID, request: AssetRequest): AssetResponse {
+	val existing = findAsset(id)
+	val replacement = request.toEntity(id = existing.id, createdAt = existing.createdAt)
+	return assetRepository.save(replacement).toResponse()
+}
+```
+
+`save()` sees an ID that is already set and calls `merge`: Hibernate copies every value of `replacement` onto the managed entity with the same ID and returns that managed entity. Dirty checking then writes the `UPDATE` as described above. This is the JPA counterpart of Room's `@Upsert`.
+
+- Values that do not come from the request (`id`, `createdAt`, `assetId`) must be carried over explicitly. A forgotten ID inserts a new row instead of updating the existing one; a forgotten `createdAt` puts a wrong timestamp into the response (the column itself is `updatable = false`).
+- Use the entity that `save()` returns. After a merge, the object passed in is not managed by Hibernate.
+
+Why updates work this way: [ADR 1](adr/0001-updates-replace-the-entity.md).
+
 ## JPA: relationship (`@ManyToOne`) vs. plain foreign key ID
 
 JPA (the standard) and Hibernate (its implementation) map classes to tables, objects to rows and fields to columns. In the database, a relationship is always just a column holding the ID of another row (`price_point.asset_id`). The question is only how that column looks in Kotlin. The database schema is identical in both variants.

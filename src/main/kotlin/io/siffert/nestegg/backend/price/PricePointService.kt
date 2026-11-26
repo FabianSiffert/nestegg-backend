@@ -34,12 +34,10 @@ class PricePointService(
 
 	@Transactional
 	fun update(assetId: UUID, priceId: UUID, request: PricePointRequest): PricePointResponse {
-		val pricePoint = findPricePoint(assetId, priceId)
+		val existing = findPricePoint(assetId, priceId)
 		requireNotInFuture(request.recordedAt)
-		pricePoint.recordedAt = request.recordedAt
-		pricePoint.unitPrice = request.unitPrice
-		pricePoint.note = request.note
-		return pricePoint.toResponse()
+		val replacement = request.toEntity(assetId, id = existing.id, createdAt = existing.createdAt)
+		return pricePointRepository.save(replacement).toResponse()
 	}
 
 	@Transactional

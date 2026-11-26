@@ -29,11 +29,13 @@ data class AssetResponse(
 	val createdAt: Instant,
 )
 
-fun AssetRequest.toEntity() = Asset(
+fun AssetRequest.toEntity(id: UUID = UUID.randomUUID(), createdAt: Instant = Instant.now()) = Asset(
+	id = id,
 	name = name,
 	type = type,
 	currency = currency,
 	notes = notes,
+	createdAt = createdAt,
 )
 
 fun Asset.toResponse() = AssetResponse(

@@ -8,6 +8,7 @@ Spring Boot backend for nestegg, a personal investment tracker. The developer is
 - `TODO.md`: open tasks and ideas for later
 - `docs/learnings.md`: concepts already explained
 - `docs/inv-integration.md`: planned integration with inv, the Pokémon card browser
+- `docs/adr/`: architecture decisions and the alternatives they rejected; do not re-suggest those without a new reason
 
 ## Conventions
 

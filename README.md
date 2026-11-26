@@ -112,7 +112,7 @@ src/main/kotlin/io/siffert/nestegg/backend/
 src/main/resources/
 ├── application.yaml
 └── db/migration/   Flyway migrations
-docs/               Learnings and planned integrations
+docs/               Learnings, planned integrations and decision records (adr/)
 ```
 
 ## License

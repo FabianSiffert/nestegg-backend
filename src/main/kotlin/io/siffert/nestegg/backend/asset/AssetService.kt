@@ -30,12 +30,9 @@ class AssetService(
 
 	@Transactional
 	fun update(id: UUID, request: AssetRequest): AssetResponse {
-		val asset = findAsset(id)
-		asset.name = request.name
-		asset.type = request.type
-		asset.currency = request.currency
-		asset.notes = request.notes
-		return asset.toResponse()
+		val existing = findAsset(id)
+		val replacement = request.toEntity(id = existing.id, createdAt = existing.createdAt)
+		return assetRepository.save(replacement).toResponse()
 	}
 
 	@Transactional

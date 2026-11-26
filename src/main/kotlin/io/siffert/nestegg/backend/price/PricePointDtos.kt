@@ -27,11 +27,17 @@ data class PricePointResponse(
 	val createdAt: Instant,
 )
 
-fun PricePointRequest.toEntity(assetId: UUID) = PricePoint(
+fun PricePointRequest.toEntity(
+	assetId: UUID,
+	id: UUID = UUID.randomUUID(),
+	createdAt: Instant = Instant.now(),
+) = PricePoint(
+	id = id,
 	assetId = assetId,
 	recordedAt = recordedAt,
 	unitPrice = unitPrice,
 	note = note,
+	createdAt = createdAt,
 )
 
 fun PricePoint.toResponse() = PricePointResponse(

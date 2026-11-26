@@ -145,16 +145,18 @@ class PricePointControllerTest @Autowired constructor(
 
 	@Test
 	fun `updates a price`() {
-		val price = savePrice(asset, "2026-01-01T09:00:00Z", "100")
+		val price = savePrice(asset, "2026-01-01T09:00:00Z", "100", createdAt = Instant.parse("2026-01-01T09:05:00Z"))
 
 		mockMvc.put("/api/v1/assets/${asset.id}/prices/${price.id}") {
 			contentType = MediaType.APPLICATION_JSON
 			content = """{"recordedAt":"2026-01-02T10:00:00Z","unitPrice":"350","note":"Corrected"}"""
 		}.andExpect {
 			status { isOk() }
+			jsonPath("$.id") { value(price.id.toString()) }
 			jsonPath("$.recordedAt") { value("2026-01-02T10:00:00Z") }
 			jsonPath("$.unitPrice") { value("350") }
 			jsonPath("$.note") { value("Corrected") }
+			jsonPath("$.createdAt") { value("2026-01-01T09:05:00Z") }
 		}
 
 		val updated = pricePointRepository.findById(price.id).orElseThrow()
@@ -176,8 +178,13 @@ class PricePointControllerTest @Autowired constructor(
 	private fun saveAsset(name: String): Asset =
 		assetRepository.save(Asset(name = name, type = AssetType.COLLECTIBLE, currency = "EUR"))
 
-	private fun savePrice(asset: Asset, recordedAt: String, unitPrice: String): PricePoint =
+	private fun savePrice(asset: Asset, recordedAt: String, unitPrice: String, createdAt: Instant = Instant.now()): PricePoint =
 		pricePointRepository.save(
-			PricePoint(assetId = asset.id, recordedAt = Instant.parse(recordedAt), unitPrice = BigDecimal(unitPrice)),
+			PricePoint(
+				assetId = asset.id,
+				recordedAt = Instant.parse(recordedAt),
+				unitPrice = BigDecimal(unitPrice),
+				createdAt = createdAt,
+			),
 		)
 }

@@ -94,17 +94,19 @@ class AssetControllerTest @Autowired constructor(
 
 	@Test
 	fun `updates an asset`() {
-		val asset = saveAsset(name = "Old name")
+		val asset = saveAsset(name = "Old name", createdAt = Instant.parse("2026-01-01T00:00:00Z"))
 
 		mockMvc.put("/api/v1/assets/${asset.id}") {
 			contentType = MediaType.APPLICATION_JSON
 			content = """{"name":"New name","type":"OTHER","currency":"USD","notes":"Updated"}"""
 		}.andExpect {
 			status { isOk() }
+			jsonPath("$.id") { value(asset.id.toString()) }
 			jsonPath("$.name") { value("New name") }
 			jsonPath("$.type") { value("OTHER") }
 			jsonPath("$.currency") { value("USD") }
 			jsonPath("$.notes") { value("Updated") }
+			jsonPath("$.createdAt") { value("2026-01-01T00:00:00Z") }
 		}
 
 		val updated = assetRepository.findById(asset.id).orElseThrow()
