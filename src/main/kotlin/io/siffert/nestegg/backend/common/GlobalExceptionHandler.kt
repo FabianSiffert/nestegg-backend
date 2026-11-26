@@ -64,6 +64,7 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
 		return handleExceptionInternal(ex, ProblemDetail.forStatusAndDetail(status, detail), headers, status, request)
 	}
 
+	// Every response built by ResponseEntityExceptionHandler passes through here, including Spring's built-in errors.
 	override fun createResponseEntity(
 		body: Any?,
 		headers: HttpHeaders,

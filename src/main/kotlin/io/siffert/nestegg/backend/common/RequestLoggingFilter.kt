@@ -13,6 +13,7 @@ import org.springframework.web.filter.OncePerRequestFilter
 import java.util.UUID
 
 @Component
+// Must run first so every log line of the request carries the request ID.
 @Order(Ordered.HIGHEST_PRECEDENCE)
 class RequestLoggingFilter : OncePerRequestFilter() {
 

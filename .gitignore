@@ -31,3 +31,6 @@ bin/
 
 .env
 *.local.yaml
+
+.agents/
+skills-lock.json
