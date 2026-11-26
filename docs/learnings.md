@@ -54,3 +54,34 @@ fun update(id: UUID, request: AssetRequest): AssetResponse {
 ```
 
 No changes, no `UPDATE`.
+
+## JPA: relationship (`@ManyToOne`) vs. plain foreign key ID
+
+JPA (the standard) and Hibernate (its implementation) map classes to tables, objects to rows and fields to columns. In the database, a relationship is always just a column holding the ID of another row (`price_point.asset_id`). The question is only how that column looks in Kotlin. The database schema is identical in both variants.
+
+**Plain ID**
+
+```kotlin
+@Column(name = "asset_id", nullable = false, updatable = false)
+val assetId: UUID,
+```
+
+- `pricePoint.assetId` is just the ID. Loading the asset is an explicit call (`assetRepository.findById(...)`), as with Room.
+- No lazy loading, no proxies, no N+1 queries.
+
+**JPA relationship**
+
+```kotlin
+@ManyToOne(fetch = FetchType.LAZY, optional = false)
+@JoinColumn(name = "asset_id")
+val asset: Asset,
+```
+
+- `pricePoint.asset.name` works directly; Hibernate loads the asset on demand.
+- Enables navigation and joins in queries without hand-written SQL.
+- `fetch = FetchType.LAZY` is essential: `@ManyToOne` defaults to eager loading.
+- Lazy loading only works inside an open transaction; outside, accessing the proxy throws `LazyInitializationException`.
+- Iterating over many entities and touching the relation triggers one extra query per entity (N+1 problem).
+- Creating one requires an `Asset` instance; `assetRepository.getReferenceById(id)` returns a proxy without a `SELECT`.
+
+**Decision for `PricePoint`:** plain ID. Prices are only ever queried per asset, and the asset ID is already known from the URL. A relationship pays off once a query spans several assets and needs their data (e.g. an activity feed with asset names). Switching later only touches Kotlin code, not the schema.
