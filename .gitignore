@@ -34,3 +34,4 @@ bin/
 
 .agents/
 skills-lock.json
+.claude/skills/improve-codebase-architecture
