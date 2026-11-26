@@ -178,6 +178,19 @@ class AssetControllerTest @Autowired constructor(
 	}
 
 	@Test
+	fun `returns the request id in validation error responses`() {
+		val result = mockMvc.post("/api/v1/assets") {
+			contentType = MediaType.APPLICATION_JSON
+			content = """{"name":"","type":"SECURITY","currency":"EUR"}"""
+		}.andExpect {
+			status { isBadRequest() }
+		}.andReturn()
+
+		val requestId = result.response.getHeader("X-Request-Id")
+		assertEquals(requestId, JsonPath.read<String>(result.response.contentAsString, "$.requestId"))
+	}
+
+	@Test
 	fun `does not add a request id outside the api`() {
 		mockMvc.get("/actuator/health").andExpect {
 			header { doesNotExist("X-Request-Id") }

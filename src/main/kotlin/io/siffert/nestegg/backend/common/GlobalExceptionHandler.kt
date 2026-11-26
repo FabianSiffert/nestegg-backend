@@ -20,21 +20,21 @@ import tools.jackson.core.JacksonException
 class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
 
 	@ExceptionHandler(NotFoundException::class)
-	fun handleNotFound(exception: NotFoundException): ProblemDetail {
+	fun handleNotFound(exception: NotFoundException, request: WebRequest): ResponseEntity<Any>? {
 		log.warn(exception.message)
-		return problemDetail(HttpStatus.NOT_FOUND, exception.message ?: "Resource not found")
+		return problemResponse(exception, HttpStatus.NOT_FOUND, exception.message ?: "Resource not found", request)
 	}
 
 	@ExceptionHandler(BadRequestException::class)
-	fun handleBadRequest(exception: BadRequestException): ProblemDetail {
+	fun handleBadRequest(exception: BadRequestException, request: WebRequest): ResponseEntity<Any>? {
 		log.warn(exception.message)
-		return problemDetail(HttpStatus.BAD_REQUEST, exception.message ?: "Bad request")
+		return problemResponse(exception, HttpStatus.BAD_REQUEST, exception.message ?: "Bad request", request)
 	}
 
 	@ExceptionHandler(Exception::class)
-	fun handleUnexpected(exception: Exception): ProblemDetail {
+	fun handleUnexpected(exception: Exception, request: WebRequest): ResponseEntity<Any>? {
 		log.error("Unhandled exception", exception)
-		return problemDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error")
+		return problemResponse(exception, HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error", request)
 	}
 
 	override fun handleMethodArgumentNotValid(
@@ -77,8 +77,13 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
 		return super.createResponseEntity(body, headers, statusCode, request)
 	}
 
-	private fun problemDetail(status: HttpStatus, detail: String): ProblemDetail =
-		ProblemDetail.forStatusAndDetail(status, detail).also { it.addRequestId() }
+	private fun problemResponse(
+		exception: Exception,
+		status: HttpStatus,
+		detail: String,
+		request: WebRequest,
+	): ResponseEntity<Any>? =
+		handleExceptionInternal(exception, ProblemDetail.forStatusAndDetail(status, detail), HttpHeaders(), status, request)
 
 	private fun ProblemDetail.addRequestId() {
 		MDC.get(RequestLoggingFilter.REQUEST_ID_KEY)?.let { setProperty("requestId", it) }
