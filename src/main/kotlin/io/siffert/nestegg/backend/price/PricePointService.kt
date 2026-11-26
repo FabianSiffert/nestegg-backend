@@ -5,6 +5,7 @@ import io.siffert.nestegg.backend.common.BadRequestException
 import io.siffert.nestegg.backend.common.NotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import java.util.UUID
@@ -14,6 +15,7 @@ import java.util.UUID
 class PricePointService(
 	private val pricePointRepository: PricePointRepository,
 	private val assetService: AssetService,
+	private val clock: Clock,
 ) {
 
 	fun list(assetId: UUID): List<PricePointResponse> {
@@ -50,7 +52,7 @@ class PricePointService(
 		pricePointRepository.findByIdAndAssetId(priceId, assetId) ?: throw PricePointNotFoundException(priceId)
 
 	private fun requireNotInFuture(recordedAt: Instant) {
-		if (recordedAt > Instant.now().plus(FUTURE_TOLERANCE)) {
+		if (recordedAt > Instant.now(clock).plus(FUTURE_TOLERANCE)) {
 			throw PriceRecordedInFutureException(recordedAt)
 		}
 	}

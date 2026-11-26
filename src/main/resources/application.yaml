@@ -9,6 +9,10 @@ spring:
     hibernate:
       ddl-auto: validate
 
+logging:
+  pattern:
+    correlation: "[%X{requestId:-}] "
+
 nestegg:
   cors:
     allowed-origins:
