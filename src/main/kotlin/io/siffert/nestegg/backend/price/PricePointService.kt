@@ -21,6 +21,8 @@ class PricePointService(
 		return pricePointRepository.findByAssetIdOrderByRecordedAtAsc(assetId).map { it.toResponse() }
 	}
 
+	fun get(assetId: UUID, priceId: UUID): PricePointResponse = findPricePoint(assetId, priceId).toResponse()
+
 	@Transactional
 	fun create(assetId: UUID, request: PricePointRequest): PricePointResponse {
 		assetService.requireExists(assetId)
