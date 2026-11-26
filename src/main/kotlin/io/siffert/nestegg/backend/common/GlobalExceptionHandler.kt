@@ -20,6 +20,10 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
 	fun handleNotFound(exception: NotFoundException): ProblemDetail =
 		ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.message ?: "Resource not found")
 
+	@ExceptionHandler(BadRequestException::class)
+	fun handleBadRequest(exception: BadRequestException): ProblemDetail =
+		ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.message ?: "Bad request")
+
 	override fun handleMethodArgumentNotValid(
 		ex: MethodArgumentNotValidException,
 		headers: HttpHeaders,

@@ -5,7 +5,7 @@ import java.util.UUID
 
 interface PricePointRepository : JpaRepository<PricePoint, UUID> {
 
-	fun findByAssetIdOrderByDateAsc(assetId: UUID): List<PricePoint>
+	fun findByAssetIdOrderByRecordedAtAsc(assetId: UUID): List<PricePoint>
 
 	fun findByIdAndAssetId(id: UUID, assetId: UUID): PricePoint?
 }

@@ -5,11 +5,10 @@ import jakarta.validation.constraints.PositiveOrZero
 import jakarta.validation.constraints.Size
 import java.math.BigDecimal
 import java.time.Instant
-import java.time.LocalDate
 import java.util.UUID
 
 data class PricePointRequest(
-	val date: LocalDate,
+	val recordedAt: Instant,
 
 	@field:PositiveOrZero
 	@field:Digits(integer = 16, fraction = 8)
@@ -22,7 +21,7 @@ data class PricePointRequest(
 data class PricePointResponse(
 	val id: UUID,
 	val assetId: UUID,
-	val date: LocalDate,
+	val recordedAt: Instant,
 	val unitPrice: String,
 	val note: String?,
 	val createdAt: Instant,
@@ -30,7 +29,7 @@ data class PricePointResponse(
 
 fun PricePointRequest.toEntity(assetId: UUID) = PricePoint(
 	assetId = assetId,
-	date = date,
+	recordedAt = recordedAt,
 	unitPrice = unitPrice,
 	note = note,
 )
@@ -38,7 +37,7 @@ fun PricePointRequest.toEntity(assetId: UUID) = PricePoint(
 fun PricePoint.toResponse() = PricePointResponse(
 	id = id,
 	assetId = assetId,
-	date = date,
+	recordedAt = recordedAt,
 	unitPrice = unitPrice.stripTrailingZeros().toPlainString(),
 	note = note,
 	createdAt = createdAt,

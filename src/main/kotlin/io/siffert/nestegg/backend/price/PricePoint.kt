@@ -6,7 +6,6 @@ import jakarta.persistence.Id
 import jakarta.persistence.Table
 import java.math.BigDecimal
 import java.time.Instant
-import java.time.LocalDate
 import java.util.UUID
 
 @Entity
@@ -18,8 +17,8 @@ class PricePoint(
 	@Column(name = "asset_id", nullable = false, updatable = false)
 	val assetId: UUID,
 
-	@Column(nullable = false)
-	var date: LocalDate,
+	@Column(name = "recorded_at", nullable = false)
+	var recordedAt: Instant,
 
 	@Column(name = "unit_price", nullable = false, precision = 24, scale = 8)
 	var unitPrice: BigDecimal,

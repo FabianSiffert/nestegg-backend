@@ -18,6 +18,12 @@ class AssetService(
 
 	fun get(id: UUID): AssetResponse = findAsset(id).toResponse()
 
+	fun requireExists(id: UUID) {
+		if (!assetRepository.existsById(id)) {
+			throw AssetNotFoundException(id)
+		}
+	}
+
 	@Transactional
 	fun create(request: AssetRequest): AssetResponse =
 		assetRepository.save(request.toEntity()).toResponse()
