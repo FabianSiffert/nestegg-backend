@@ -88,6 +88,8 @@ class PricePointControllerTest @Autowired constructor(
 		}.andExpect {
 			status { isBadRequest() }
 			jsonPath("$.detail") { value("Price recorded at 2099-01-01T00:00:00Z is in the future") }
+			jsonPath("$.errors[0].field") { value("recordedAt") }
+			jsonPath("$.errors[0].code") { value("PastOrPresent") }
 		}
 
 		assertEquals(0L, pricePointRepository.count())

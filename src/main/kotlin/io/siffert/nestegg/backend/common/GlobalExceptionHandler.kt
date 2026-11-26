@@ -28,7 +28,9 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
 	@ExceptionHandler(BadRequestException::class)
 	fun handleBadRequest(exception: BadRequestException, request: WebRequest): ResponseEntity<Any>? {
 		log.warn(exception.message)
-		return problemResponse(exception, HttpStatus.BAD_REQUEST, exception.message ?: "Bad request", request)
+		val detail = exception.message ?: "Bad request"
+		val problem = inputProblem(HttpStatus.BAD_REQUEST, detail, listOf(InputError(exception.field, exception.code, detail)))
+		return handleExceptionInternal(exception, problem, HttpHeaders(), HttpStatus.BAD_REQUEST, request)
 	}
 
 	@ExceptionHandler(Exception::class)
@@ -43,13 +45,11 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
 		status: HttpStatusCode,
 		request: WebRequest,
 	): ResponseEntity<Any>? {
-		val errors = ex.bindingResult.fieldErrors.map {
-			mapOf("field" to it.field, "code" to it.code, "message" to it.defaultMessage)
-		}
+		val fieldErrors = ex.bindingResult.fieldErrors.map { InputError(it.field, it.code, it.defaultMessage) }
+		val globalErrors = ex.bindingResult.globalErrors.map { InputError(null, it.code, it.defaultMessage) }
+		val errors = fieldErrors + globalErrors
 		log.warn("Request validation failed: {}", errors)
-		val problem = ProblemDetail.forStatusAndDetail(status, "Request validation failed")
-		problem.setProperty("errors", errors)
-		return handleExceptionInternal(ex, problem, headers, status, request)
+		return handleExceptionInternal(ex, inputProblem(status, "Request validation failed", errors), headers, status, request)
 	}
 
 	override fun handleHttpMessageNotReadable(
@@ -59,9 +59,13 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
 		request: WebRequest,
 	): ResponseEntity<Any>? {
 		val field = (ex.cause as? JacksonException)?.path?.mapNotNull { it.propertyName }?.joinToString(".")
-		val detail = if (field.isNullOrEmpty()) "Malformed request body" else "Invalid or missing value for field '$field'"
-		log.warn(detail)
-		return handleExceptionInternal(ex, ProblemDetail.forStatusAndDetail(status, detail), headers, status, request)
+		val error = if (field.isNullOrEmpty()) {
+			InputError(field = null, code = "MalformedBody", message = "Malformed request body")
+		} else {
+			InputError(field = field, code = "InvalidValue", message = "Invalid or missing value for field '$field'")
+		}
+		log.warn(error.message)
+		return handleExceptionInternal(ex, inputProblem(status, error.message, listOf(error)), headers, status, request)
 	}
 
 	// Every response built by ResponseEntityExceptionHandler passes through here, including Spring's built-in errors.
@@ -85,6 +89,9 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
 	): ResponseEntity<Any>? =
 		handleExceptionInternal(exception, ProblemDetail.forStatusAndDetail(status, detail), HttpHeaders(), status, request)
 
+	private fun inputProblem(status: HttpStatusCode, detail: String?, errors: List<InputError>): ProblemDetail =
+		ProblemDetail.forStatusAndDetail(status, detail).apply { setProperty("errors", errors) }
+
 	private fun ProblemDetail.addRequestId() {
 		MDC.get(RequestLoggingFilter.REQUEST_ID_KEY)?.let { setProperty("requestId", it) }
 	}
@@ -93,3 +100,5 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
 		val log: Logger = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
 	}
 }
+
+internal data class InputError(val field: String?, val code: String?, val message: String?)

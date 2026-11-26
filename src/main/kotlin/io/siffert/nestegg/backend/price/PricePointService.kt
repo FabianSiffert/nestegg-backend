@@ -65,4 +65,4 @@ class PricePointService(
 class PricePointNotFoundException(id: UUID) : NotFoundException("Price point $id not found")
 
 class PriceRecordedInFutureException(recordedAt: Instant) :
-	BadRequestException("Price recorded at $recordedAt is in the future")
+	BadRequestException("Price recorded at $recordedAt is in the future", code = "PastOrPresent", field = "recordedAt")

@@ -6,6 +6,7 @@ import io.siffert.nestegg.backend.price.PricePoint
 import io.siffert.nestegg.backend.price.PricePointRepository
 import org.hamcrest.Matchers.containsInAnyOrder
 import org.hamcrest.Matchers.containsString
+import org.hamcrest.Matchers.nullValue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -152,6 +153,8 @@ class AssetControllerTest @Autowired constructor(
 		}.andExpect {
 			status { isBadRequest() }
 			jsonPath("$.detail") { value("Malformed request body") }
+			jsonPath("$.errors[0].field") { value(nullValue()) }
+			jsonPath("$.errors[0].code") { value("MalformedBody") }
 		}
 	}
 
@@ -163,6 +166,8 @@ class AssetControllerTest @Autowired constructor(
 		}.andExpect {
 			status { isBadRequest() }
 			jsonPath("$.detail") { value("Invalid or missing value for field 'name'") }
+			jsonPath("$.errors[0].field") { value("name") }
+			jsonPath("$.errors[0].code") { value("InvalidValue") }
 		}
 	}
 
