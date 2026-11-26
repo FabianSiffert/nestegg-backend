@@ -7,6 +7,7 @@ Spring Boot backend for nestegg, a personal investment tracker. The developer is
 - `README.md`: tech stack, key decisions, how to run
 - `TODO.md`: open tasks and ideas for later
 - `docs/learnings.md`: concepts already explained
+- `docs/inv-integration.md`: planned integration with inv, the Pokémon card browser
 
 ## Conventions
 
